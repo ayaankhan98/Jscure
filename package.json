@@ -3,7 +3,9 @@
   "version": "1.0.0",
   "description": "Obfuscation tool for javascript",
   "main": "index.js",
+  "type": "module",
   "scripts": {
+    "start": "node index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -15,5 +17,8 @@
   "bugs": {
     "url": "https://github.com/ayaankhan98/js-obfuscator/issues"
   },
-  "homepage": "https://github.com/ayaankhan98/js-obfuscator#readme"
+  "homepage": "https://github.com/ayaankhan98/js-obfuscator#readme",
+  "dependencies": {
+    "chiffon": "^2.5.4"
+  }
 }

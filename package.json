@@ -19,6 +19,7 @@
   },
   "homepage": "https://github.com/ayaankhan98/js-obfuscator#readme",
   "dependencies": {
-    "chiffon": "^2.5.4"
+    "chiffon": "^2.5.4",
+    "esprima": "^4.0.1"
   }
 }

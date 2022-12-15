@@ -1,15 +1,12 @@
-import chiffon from "chiffon";
+import esprima from 'esprima';
 
 let sourceProgram = `
-    let a = 1;
-    let b = 2;
-    let c = a + b;
-    console.log(c);
+    let a = 10;
+    console.log(a);
 `;
 
-const options = {};
-
-let tokens = chiffon.tokenize(sourceProgram, options);
-let AST = chiffon.parse(sourceProgram, options);
+let tokens = esprima.tokenize(sourceProgram);
 console.log(tokens);
-console.log(JSON.stringify(AST, 2, ' '));
+
+let AST = esprima.parseScript(sourceProgram);
+console.log(JSON.stringify(AST, null, ' '));

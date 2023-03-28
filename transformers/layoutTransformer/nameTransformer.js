@@ -1,3 +1,8 @@
+
+class NameTransformer {
+    
+};
+
 /**
  * 
  * @param {Integer} hashLength - length of random hash value

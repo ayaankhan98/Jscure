@@ -13,6 +13,7 @@ let ast = esprima.parseScript(sourceProgram);
 let cache = {};
 
 traverse(ast);
+deadCodeTransformer();
 
 function replaceStringLiteral(node, func) {
   func(node);
@@ -255,7 +256,7 @@ function handleExpression(node) {
   if (node.left?.type === "Identifier") {
     let oldIdentifier = node.left.name;
     if (cache[oldIdentifier]) {
-      node.left.name = '(' + cache[oldIdentifier] + ')';
+      node.left.name = "(" + cache[oldIdentifier] + ")";
     }
   }
   if (node.left?.type === "Literal") {
@@ -330,7 +331,6 @@ function generateRandomHex(length) {
   for (var i = 0; i < length; i++) {
     hex += possible.charAt(Math.floor(Math.random() * possible.length));
   }
-
   return hex;
 }
 
@@ -343,386 +343,283 @@ function generateRandomHexNumber(length) {
   return hex;
 }
 
-function generateTestCondition() {
-  let testExpressions = ["LogicalExpression", "BinaryExpression"];
-  let operators = [
-    "instanceof",
-    "in",
-    "+",
-    "-",
-    "*",
-    "/",
-    "%",
-    "**",
-    "|",
-    "^",
-    "&",
-    "==",
-    "!=",
-    "===",
-    "!==",
-    "<",
-    ">",
-    "<=",
-    "<<",
-    ">>",
-    ">>>",
-    "||",
-    "&&",
-  ];
-  let testExpression =
-    testExpressions[Math.floor(Math.random() * testExpressions.length)];
-  let testCondition = {
-    type: testExpression,
-  };
-  if (testExpression != "MemberExpression") {
-    let operator = operators[Math.floor(Math.random() * operators.length)];
-    testCondition.operator = operator;
-    let leftVal = generateRandomHexNumber(5);
-    let rightVal = generateRandomHexNumber(5);
-    testCondition.left = {
-      type: "Literal",
-      value: leftVal,
-      raw: leftVal.toString(),
-    };
-    testCondition.right = {
-      type: "Literal",
-      value: rightVal,
-      raw: rightVal.toString(),
-    };
-  } else {
+function deadCodeVariableNameGenerator() {
+  let length = Math.floor(Math.random() * 10) + 5;
+  let characters =
+    "_0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+  let result = "__";
+  for (let i = 0; i < length; i++) {
+    result += characters.charAt(Math.floor(Math.random() * characters.length));
   }
-  return testCondition;
+  return result;
+}
+
+function shuffleArray(array) {
+  for (var i = array.length - 1; i > 0; i--) {
+    var j = Math.floor(Math.random() * (i + 1));
+    var temp = array[i];
+    array[i] = array[j];
+    array[j] = temp;
+  }
+  return array;
+}
+
+function generateFalseExpression() {
+  const operators = ["&&", "||"];
+  const operands = ["false", "null", "undefined", "0", "NaN", "''"];
+
+  let expression = "";
+  let numOperands = Math.floor(Math.random() * 3) + 2;
+
+  for (let i = 0; i < numOperands - 1; i++) {
+    expression += operands[Math.floor(Math.random() * operands.length)];
+    expression +=
+      " " + operators[Math.floor(Math.random() * operators.length)] + " ";
+  }
+
+  expression += operands[Math.floor(Math.random() * operands.length)];
+
+  return expression;
+}
+
+function generateExpression(depth) {
+  if (depth == 0) {
+    // base case: return a random number
+    return generateRandomHexNumber(4);
+  } else {
+    // recursive case: generate an expression
+    let operator;
+    if (depth == 1) {
+      // at the bottom level, use only arithmetic operators
+      operator = Math.random() < 0.5 ? "+" : "-";
+    } else if (depth == 2) {
+      // at the middle level, use arithmetic and comparison operators
+      operator =
+        Math.random() < 0.33
+          ? "+"
+          : Math.random() < 0.67
+          ? "-"
+          : Math.random() < 0.5
+          ? "<"
+          : ">";
+    } else {
+      // at the top level, use all operators
+      operator =
+        Math.random() < 0.2
+          ? "+"
+          : Math.random() < 0.4
+          ? "-"
+          : Math.random() < 0.6
+          ? "*"
+          : Math.random() < 0.8
+          ? "/"
+          : Math.random() < 0.5
+          ? "<"
+          : ">";
+    }
+    let left = generateExpression(depth - 1);
+    let right = generateExpression(depth - 1);
+    return `(${left} ${operator} ${right})`;
+  }
+}
+
+function generateTestConditionVariables() {
+  let numberOfVars = Math.floor(Math.random() * 6) + 2;
+  let vars = [];
+  for (let i = 0; i < numberOfVars; i++) {
+    let value =
+      Math.floor(Math.random() * 100) + 1 > 50
+        ? true
+        : generateFalseExpression();
+    vars[i] = { name: deadCodeVariableNameGenerator(), value };
+  }
+  let code = "";
+  for (let i = 0; i < numberOfVars; i++) {
+    code += `let ${vars[i].name} = ${vars[i].value};`;
+  }
+  return { code, vars };
+}
+
+function generateTestCondition(varNames) {
+  shuffleArray(varNames);
+  let condition = "(";
+  let operators = ["===", "!==", ">", "<", ">=", "<=", "&&", "||"];
+  for (let i = 0; i < varNames.length - 1; i++) {
+    if (i !== varNames.length - 2)
+      condition += `${varNames[i].name} ${
+        operators[Math.floor(Math.random() * operators.length)]
+      } ${varNames[i + 1].name} ${
+        operators[Math.floor(Math.random() * operators.length)]
+      }`;
+    else
+      condition += `${varNames[i].name} ${
+        operators[Math.floor(Math.random() * operators.length)]
+      } ${varNames[i + 1].name}`;
+  }
+  condition += ")";
+  condition += `&& (${generateFalseExpression()})`;
+  return condition;
 }
 
 function generateBlockStatement() {
-  let blockStatement = [];
-  let numberOfStatements = Math.floor(Math.random() * 5);
-  for (let i = 0; i < numberOfStatements; i++) {
-    let statement = generateStatement();
-    blockStatement.push(statement);
-  }
-  return blockStatement;
+  let code = "";
+  code += generateArrayExpression();
+  code += generateExpression(Math.floor(Math.random() * 5) + 1);
+  return code;
 }
 
-function generateStatement() {
-  let statements = [
-    "ExpressionStatement",
-    "BlockStatement",
-    "IfStatement",
-    "WhileStatement",
-    "ForStatement",
-    "ForInStatement",
-    "ForOfStatement",
-    "DoWhileStatement",
-    "SwitchStatement",
-    "TryStatement"
-  ]
-  let statement = statements[Math.floor(Math.random() * statements.length)];
-  if (statement === "ExpressionStatement") {
-    return generateExpressionStatement();
+function generateNumberOfElseIfBlocks(varNames) {
+  let code = "";
+  let numberOfElseIfBlocks = Math.floor(Math.random() * 5) + 1;
+  for (let i = 0; i < numberOfElseIfBlocks; i++) {
+    code += ` else if ((${generateTestCondition(
+      varNames
+    )}) && ${generateFalseExpression()}) {
+      ${generateBlockStatement()}
+    }`;
   }
-  if (statement === "BlockStatement") {
-    return generateBlockStatement();
-  }
-  if (statement === "IfStatement") {
-    return generateIfStatement();
-  }
-  if (statement === "WhileStatement") {
-    return generateWhileStatement();
-  }
-  if (statement === "ForStatement") {
-    return generateForStatement();
-  }
-  if (statement === "ForInStatement") {
-    return generateForInStatement();
-  }
-  if (statement === "ForOfStatement") {
-    return generateForOfStatement();
-  }
-  if (statement === "DoWhileStatement") {
-    return generateDoWhileStatement();
-  }
-  if (statement === "SwitchStatement") {
-    return generateSwitchStatement();
-  }
-  if (statement === "TryStatement") {
-    return generateTryStatement();
-  }
-}
-
-function generateTryStatement() {
-  let tryStatement = {
-    type: "TryStatement",
-    block: generateBlockStatement(),
-    handler: generateCatchClause(),
-  };
-  return tryStatement;
-}
-
-function generateCatchClause() {
-  let catchClause = {
-    type: "CatchClause",
-    param: generateIdentifier(),
-    body: generateBlockStatement(),
-  };
-  return catchClause;
-}
-
-function generateIdentifier() {
-  let identifier = {
-    type: "Identifier",
-    name: generateRandomString(),
-  };
-  return identifier;
-}
-
-function generateSwitchStatement() {
-  let switchStatement = {
-    type: "SwitchStatement",
-    discriminant: generateIdentifier(),
-    cases: generateSwitchCase(),
-  };
-  return switchStatement;
-}
-
-function generateSwitchCase() {
-  let switchCase = [];
-  let numberOfCases = Math.floor(Math.random() * 5);
-  for (let i = 0; i < numberOfCases; i++) {
-    let caseStatement = {
-      type: "SwitchCase",
-      test: generateIdentifier(),
-      consequent: generateBlockStatement(),
-    };
-    switchCase.push(caseStatement);
-  }
-  return switchCase;
-}
-
-function generateDoWhileStatement() {
-  let doWhileStatement = {
-    type: "DoWhileStatement",
-    test: generateTestCondition(),
-    body: generateBlockStatement(),
-  };
-  return doWhileStatement;
-}
-
-function generateForOfStatement() {
-  let forOfStatement = {
-    type: "ForOfStatement",
-    left: generateIdentifier(),
-    right: generateIdentifier(),
-    body: generateBlockStatement(),
-  };
-  return forOfStatement;
-}
-
-function generateForInStatement() {
-  let forInStatement = {
-    type: "ForInStatement",
-    left: generateIdentifier(),
-    right: generateIdentifier(),
-    body: generateBlockStatement(),
-  };
-  return forInStatement;
-}
-
-function generateForStatement() {
-  let forStatement = {
-    type: "ForStatement",
-    init: generateIdentifier(),
-    test: generateTestCondition(),
-    update: generateIdentifier(),
-    body: generateBlockStatement(),
-  };
-  return forStatement;
-}
-
-function generateWhileStatement() {
-  let whileStatement = {
-    type: "WhileStatement",
-    test: generateTestCondition(),
-    body: generateBlockStatement(),
-  };
-  return whileStatement;
+  return code;
 }
 
 function generateIfStatement() {
-  let ifStatement = {
-    type: "IfStatement",
-    test: generateTestCondition(),
-    consequent: generateBlockStatement(),
-    alternate: generateBlockStatement(),
-  };
-  return ifStatement;
-}
+  let vars = generateTestConditionVariables();
+  let code = vars.code;
+  let names = vars.vars;
+  let codePattern = [
+    `${code}
+    if ((${generateTestCondition(names)}) && ${generateFalseExpression()}) {
+      ${generateBlockStatement().toString()}
+    };
+    `,
 
-function generateExpressionStatement() {
-  let expressionStatement = {
-    type: "ExpressionStatement",
-    expression: generateExpression(),
-  };
-  return expressionStatement;
-}
+    `${code}
+    if ((${generateTestCondition(names)}) && ${generateFalseExpression()}) {
+      ${generateBlockStatement()}
+      }` +
+      `
+      ${generateNumberOfElseIfBlocks(names)}
+      ` +
+      `else {
+        ${generateBlockStatement()}
+      }`,
 
-function generateExpression() {
-  let expressions = [
-    "AssignmentExpression",
-    "BinaryExpression",
-    "CallExpression",
-    "ConditionalExpression",
-    "LogicalExpression",
-    "MemberExpression",
-    "NewExpression",
-    "SequenceExpression",
-    "UnaryExpression",
-    "UpdateExpression",
+    `${code}
+    if ((${generateTestCondition(names)}) && ${generateFalseExpression()}) {
+      ${generateBlockStatement()}
+      }
+      else {
+        ${generateBlockStatement()}
+      }`,
   ];
-  let expression = expressions[Math.floor(Math.random() * expressions.length)];
-  if (expression === "AssignmentExpression") {
-    return generateAssignmentExpression();
+  code = codePattern[Math.floor(Math.random() * codePattern.length)];
+  return code;
+}
+
+function generateForInitializerStatement(vars) {
+  let code = "let ";
+  for (let i = 0; i < vars.vars.length; i++) {
+    if (i == vars.vars.length - 1)
+      code += `${vars.vars[i].name} = ${Math.floor(Math.random() * 20) + 1}`;
+    else
+      code += `${vars.vars[i].name} = ${Math.floor(Math.random() * 20) + 1},`;
   }
-  if (expression === "BinaryExpression") {
-    return generateBinaryExpression();
+  code += ";";
+  code += generateTestCondition(vars.vars);
+  code += ";";
+  return code;
+}
+
+function generateLoopStatement() {
+  let vars = generateTestConditionVariables();
+  let codePattern = [
+    `
+      for (${generateForInitializerStatement(vars)}) {
+        ${generateBlockStatement()}
+      }
+    `,
+    `
+      ${vars.code}
+      while(${generateTestCondition(vars.vars)}) {
+        ${generateBlockStatement()}
+      }
+    `,
+  ];
+  let code = codePattern[Math.floor(Math.random() * codePattern.length)];
+  return code;
+}
+
+function generateArrayExpression() {
+  let numberOfElements = Math.floor(Math.random() * 5) + 1;
+  let code = "let ";
+  code += deadCodeVariableNameGenerator();
+  code += " = [";
+  let arrayType = ["number", "string", "boolean"];
+  let type = arrayType[Math.floor(Math.random() * arrayType.length)];
+  for (let i = 0; i < numberOfElements; i++) {
+    if (i == numberOfElements - 1) {
+      if (type == "number") code += Math.floor(Math.random() * 100);
+      else if (type == "string") code += `'${deadCodeVariableNameGenerator()}'`;
+      else if (type == "boolean")
+        code += Math.floor(Math.random() * 100) > 50 ? "true" : "false";
+    } else {
+      if (type == "number") code += Math.floor(Math.random() * 100) + ",";
+      else if (type == "string")
+        code += `'${deadCodeVariableNameGenerator()}',`;
+      else if (type == "boolean")
+        code += Math.floor(Math.random() * 100) > 50 ? "true," : "false,";
+    }
   }
-  if (expression === "CallExpression") {
-    return generateCallExpression();
+  code += "];";
+  return code;
+}
+
+function generateArrayUnfoldIterator(arr) {}
+
+function generateNormalFunction() {
+  return `function ${deadCodeVariableNameGenerator()} () {${generateBlockStatement()}}`;
+}
+
+function generateArrowFunction() {}
+
+function insertAt(array, index, ...elementsArray) {
+  array.splice(index, 0, ...elementsArray);
+}
+
+function deadCodeTransformer() {
+  let numberOfTransforms = Math.floor(Math.random() * 10) + 2;
+  let transfroms = [
+    "generateIfStatement",
+    "generateLoopStatement",
+    "generateNormalFunction",
+  ];
+  for (let i = 0; i < numberOfTransforms; i++) {
+    let randomTransform =
+      transfroms[Math.floor(Math.random() * transfroms.length)];
+    let transformerCode = eval(randomTransform)();
+    let transformerCodeAST = esprima.parseScript(transformerCode);
+    let k = -1;
+    for (let j = 0; j < ast.body.length - 1; j++) {
+      if (k < transformerCodeAST.body.length - 1) {
+        k++;
+      } else {
+        break;
+      }
+      insertAt(ast.body, j, transformerCodeAST.body[k]);
+    }
+    if (k < transformerCodeAST.body.length) {
+      while (k < transformerCodeAST.body.length) {
+        ast.body.push(transformerCodeAST.body[k++]);
+      }
+    }
   }
-  if (expression === "ConditionalExpression") {
-    return generateConditionalExpression();
-  }
-  if (expression === "LogicalExpression") {
-    return generateLogicalExpression();
-  }
-  if (expression === "MemberExpression") {
-    return generateMemberExpression();
-  }
-  if (expression === "NewExpression") {
-    return generateNewExpression();
-  }
-  if (expression === "SequenceExpression") {
-    return generateSequenceExpression();
-  }
-  if (expression === "UnaryExpression") {
-    return generateUnaryExpression();
-  }
-  if (expression === "UpdateExpression") {
-    return generateUpdateExpression();
-  }
+  // console.log(JSON.stringify(ast, null));
 }
 
-function generateAssignmentExpression() {
-  let assignmentExpression = {
-    type: "AssignmentExpression",
-    operator: "=",
-    left: generateRandomHexNumber(5),
-    right: generateRandomHexNumber(5),
-  };
-  return assignmentExpression;
-}
+// console.log(JSON.stringify(esprima.parseScript(generateIfStatement()), null, 2));
 
-function generateBinaryExpression() {
-  let binaryExpression = {
-    type: "BinaryExpression",
-    operator: "+",
-    left: generateRandomHexNumber(5),
-    right: generateRandomHexNumber(5),
-  };
-  return binaryExpression;
-}
+// console.log(generateBlockStatement());
 
-function generateCallExpression() {
-  let callExpression = {
-    type: "CallExpression",
-    callee: generateRandomHexNumber(5),
-    arguments: [],
-  };
-  return callExpression;
-}
-
-function generateConditionalExpression() {
-  let conditionalExpression = {
-    type: "ConditionalExpression",
-    test: generateRandomHexNumber(5),
-    consequent: generateRandomHexNumber(5),
-    alternate: generateRandomHexNumber(5),
-  };
-  return conditionalExpression;
-}
-
-function generateLogicalExpression() {
-  let logicalExpression = {
-    type: "LogicalExpression",
-    operator: "||",
-    left: generateRandomHexNumber(5),
-    right: generateRandomHexNumber(5),
-  };
-  return logicalExpression;
-}
-
-function generateMemberExpression() {
-  let memberExpression = {
-    type: "MemberExpression",
-    object: generateRandomHexNumber(5),
-    property: generateRandomHexNumber(5),
-  };
-  return memberExpression;
-}
-
-function generateNewExpression() {
-  let newExpression = {
-    type: "NewExpression",
-    callee: generateRandomHexNumber(5),
-    arguments: [],
-  };
-  return newExpression;
-}
-
-function generateSequenceExpression() {
-  let sequenceExpression = {
-    type: "SequenceExpression",
-    expressions: [],
-  };
-  return sequenceExpression;
-}
-
-function generateUnaryExpression() {
-  let unaryExpression = {
-    type: "UnaryExpression",
-    operator: "!",
-    argument: generateRandomHexNumber(5),
-  };
-  return unaryExpression;
-}
-
-function generateUpdateExpression() {
-  let updateExpression = {
-    type: "UpdateExpression",
-    operator: "++",
-    argument: generateRandomHexNumber(5),
-  };
-  return updateExpression;
-}
-
-// function generateIfStatement() {
-//   let ifStatement = {
-//     type: "IfStatement",
-//     test: generateTestCondition(),
-//     consequent: {
-//       type: "BlockStatement",
-//       body: generateBlockStatement(),
-//     },
-//   };
-//   return ifStatement;
-// }
-
-// console.log(JSON.stringify(generateIf(), null, 2));
-// let newStatement = generateIfStatement();
-// console.log(JSON.stringify(newStatement, null, 2));
-// ast.body.push(newStatement);
-let obfuscatedOutput = escodegen.generate(ast, {format: {compact: true}});
+let obfuscatedOutput = escodegen.generate(ast, { format: { compact: true } });
 // obfuscatedOutput = UglifyJS.minify(obfuscatedOutput).code;
 console.log(obfuscatedOutput);
 eval(obfuscatedOutput);

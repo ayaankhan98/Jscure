@@ -12,8 +12,12 @@ let ast = esprima.parseScript(sourceProgram);
 
 let cache = {};
 
-traverse(ast);
-deadCodeTransformer();
+function obfuscate() {
+  traverse(ast);
+  deadCodeTransformer();
+}
+
+obfuscate();
 
 function replaceStringLiteral(node, func) {
   func(node);
@@ -146,6 +150,37 @@ function traverse(ast) {
         }
         break;
 
+      case "WhileStatement":
+        if (node.test.type === "LogicalExpression" ||
+        node.test.type === "BinaryExpression" ||
+        node.test.type === "MemberExpression") {
+          handleExpression(node.test);
+        }
+        if (node.body.type === "BlockStatement") {
+          traverse(node.body);
+        }
+        break;
+
+      case "ReturnStatement":
+        if (node.argument.type === "Identifier") {
+              let oldIdentifier = node.argument.name;
+              if (cache[oldIdentifier]) {
+                node.argument.name = cache[oldIdentifier];
+              }
+              else {
+                let newIdentifier = generateRandomString();
+                cache[oldIdentifier] = newIdentifier;
+                node.argument.name = newIdentifier;
+              }
+        }
+        if (node.argument.type === "CallExpression") {
+          handleCallExpression(node.argument);
+        }
+        if (node.argument.type === "ArrayExpression") {
+          handleExpression(node.argument);;
+        }
+        break;
+
       case "ClassDeclaration":
         if (node.id.type === "Identifier") {
           let oldIdentifier = node.id.name;
@@ -193,6 +228,9 @@ function handleCallExpression(node) {
       node.callee.name = cache[oldIdentifier];
     }
   }
+  if (node.callee?.type === "MemberExpression") {
+    handleExpression(node.callee)
+  }
   if (node.arguments.length > 0) {
     node.arguments.forEach((arg) => {
       if (arg.type === "Identifier") {
@@ -207,6 +245,9 @@ function handleCallExpression(node) {
         arg.type === "MemberExpression"
       ) {
         handleExpression(arg);
+      }
+      if (arg.type === "CallExpression") {
+        handleCallExpression(arg);
       }
     });
   }
@@ -238,6 +279,9 @@ function handleVariableDeclaration(node) {
         if (element.type === "Literal") {
           transformNumericLiterals(element);
         }
+        if (element.type === "SpreadElement") {
+          handleExpression(element.argument);
+        }
       });
     }
   });
@@ -253,6 +297,12 @@ function handleUpdateExpression(node) {
 }
 
 function handleExpression(node) {
+  if (node.type === "Identifier") {
+    let oldIdentifier = node.name;
+    if (cache[oldIdentifier]) {
+      node.name = cache[oldIdentifier];
+    }
+  }
   if (node.left?.type === "Identifier") {
     let oldIdentifier = node.left.name;
     if (cache[oldIdentifier]) {
@@ -310,6 +360,13 @@ function handleExpression(node) {
     node.object?.type === "MemberExpression"
   ) {
     handleExpression(node.object);
+  }
+  if (node.type === "ArrayExpression") {
+    node.elements.forEach(element => {
+      if (element.type === "SpreadElement") {
+        handleExpression(element.argument);
+      }
+    });
   }
 }
 
@@ -612,17 +669,16 @@ function deadCodeTransformer() {
       }
     }
   }
-  // console.log(JSON.stringify(ast, null));
 }
 
 // console.log(JSON.stringify(esprima.parseScript(generateIfStatement()), null, 2));
 
 // console.log(generateBlockStatement());
 
-let obfuscatedOutput = escodegen.generate(ast, { format: { compact: true } });
+let obfuscatedOutput = escodegen.generate(ast, {format: {compact: true}});
 // obfuscatedOutput = UglifyJS.minify(obfuscatedOutput).code;
 console.log(obfuscatedOutput);
-eval(obfuscatedOutput);
-eval(sourceProgram);
+//eval(obfuscatedOutput);
+//eval(sourceProgram);
 // assert(eval(obfuscatedOutput) === eval(sourceProgram));
-// console.log(JSON.stringify(ast, null, 2));
+ //console.log(JSON.stringify(ast, null, 2));

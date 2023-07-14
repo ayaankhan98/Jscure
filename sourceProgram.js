@@ -25,28 +25,28 @@
 
  //let b = (a)*(1) + (a);
 
-function merge_Arrays(left_sub_array, right_sub_array) {
-         let array = []
-         while (left_sub_array.length && right_sub_array.length) {
-            if (left_sub_array[0] < right_sub_array[0]) {
-               array.push(left_sub_array.shift())
-            } else {
-               array.push(right_sub_array.shift())
-            }
-         }
-         return [ ...array, ...left_sub_array, ...right_sub_array ]
-      }
-      function merge_sort(unsorted_Array) {
-         const middle_index = unsorted_Array.length / 2
-         if(unsorted_Array.length < 2) {
-            return unsorted_Array
-         }
-         const left_sub_array = unsorted_Array.splice(0, middle_index)
-         return merge_Arrays(merge_sort(left_sub_array),merge_sort(unsorted_Array))
-      }
-     let  unsorted_Array = [39, 28, 44, 4, 10, 83, 11];
+//function merge_Arrays(left_sub_array, right_sub_array) {
+         //let array = []
+         //while (left_sub_array.length && right_sub_array.length) {
+            //if (left_sub_array[0] < right_sub_array[0]) {
+               //array.push(left_sub_array.shift())
+            //} else {
+               //array.push(right_sub_array.shift())
+            //}
+         //}
+         //return [ ...array, ...left_sub_array, ...right_sub_array ]
+      //}
+      //function merge_sort(unsorted_Array) {
+         //const middle_index = unsorted_Array.length / 2
+         //if(unsorted_Array.length < 2) {
+            //return unsorted_Array
+         //}
+         //const left_sub_array = unsorted_Array.splice(0, middle_index)
+         //return merge_Arrays(merge_sort(left_sub_array),merge_sort(unsorted_Array))
+      //}
+     //let  unsorted_Array = [39, 28, 44, 4, 10, 83, 11];
 
-console.log(merge_sort(unsorted_Array));
+//console.log(merge_sort(unsorted_Array));
 
 
 //let arr = [3, 2, 1, 4, 5, 6, 7, 8, 9, 10];
@@ -70,24 +70,36 @@ console.log(merge_sort(unsorted_Array));
 //console.log(arr);
 
 
-// let func = () => {
+ //let func = () => {
 
-// }
+ //}
 
-// func();
+ //func();
 
-// c = (a + b) * 2;
-// if (a && b 
-//     | c) {
+ //c = (a + b) * 2;
+ //if (a && b 
+     //| c) {
 
-// }
+ //}
 
-// class Entity {
-//     constructor(name) {
-//         this.name = name;
-//     }
+function dfs (start, target) {
+    console.log("Visiting Node " + start.value);
+    if (start.value === target) {
+        // We have found the goal node we we're searching for
+        console.log("Found the node we're looking for!");
+        return start;
+    }
 
-//     getName() {
+    // Recurse with all children
+    for (var i = 0; i < start.children.length; i++) {
+        var result = dfs(start.children[i], target);
+        if (result != null) {
+            // We've found the goal node while going down that child
+            return result;
+        }
+    }
 
-//     }
-// }
+    // We've gone through all children and not found the goal node
+    console.log("Went through all children of " + start.value + ", returning to it's parent.");
+    return null;
+};

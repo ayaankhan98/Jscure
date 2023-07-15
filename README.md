@@ -34,12 +34,10 @@ function bubbleSort(arr) {
 bubbleSort(arr);
 console.log(arr);
 ```
-<details><summary>Obfuscated code</summary>
-
-```javascript
+Obfuscated code
+```text()
 for(let __p4A3xQKI=11,__kSbHx1HZgzEfsW=20;(__p4A3xQKI||__kSbHx1HZgzEfsW)&&(false||undefined);){let __1wv3ve=[false,true,false];51903+40950+(30844+37602)-(33328+14229+(61006+10438))+(44184-38235>19620+64404)*(51190+59729-(61535+17668))+(59656+42787-(1330+55386)+(45425-47664+(64892-16418))-(44910-52259+(9410+50427)-(33974+58495+(24252+40730))));}let __QVrgBpbgOC0d8q=null||NaN||false;let ___nKm5T3tmjYg=true;let __hk4j0MeX2fh=NaN||undefined&&false&&null;let __R7OfKKQtR29Rh=false&&null;let __GZKz7UlVPDHVI=true;let __BvwrBa55hz5=true;let __ruMjegB=undefined&&NaN&&''&&NaN;while((__hk4j0MeX2fh<=__BvwrBa55hz5||__BvwrBa55hz5<=__R7OfKKQtR29Rh&&__R7OfKKQtR29Rh<=___nKm5T3tmjYg<___nKm5T3tmjYg>=__ruMjegB<__ruMjegB&&__QVrgBpbgOC0d8q<__QVrgBpbgOC0d8q||__GZKz7UlVPDHVI)&&(''||0||0&&undefined)){let __JgLB49eAC4dvs=[95,38,50,27];(3199+26785<63197+48841)*(24801-12521>50102-30793);}let _NFyfECbmoVwcJ=[parseFloat('3'),parseFloat('2'),parseFloat('1'),parseFloat('4'),parseFloat('5'),parseFloat('6'),parseFloat('7'),parseFloat('8'),parseFloat('9'),parseFloat('10')];function _0xf2fc76149501ab(_NFyfECbmoVwcJ){let _oS7TKkUEAOpq=_NFyfECbmoVwcJ.length;for(let _y3IJZ587GW=parseFloat('0');(_y3IJZ587GW)<_NFyfECbmoVwcJ.length;_y3IJZ587GW++){for(let _m1Qt4UEmh__fZ=parseFloat('0');(_m1Qt4UEmh__fZ)<_NFyfECbmoVwcJ.length-_y3IJZ587GW-parseFloat('1');_m1Qt4UEmh__fZ++){if(_NFyfECbmoVwcJ[_m1Qt4UEmh__fZ]>_NFyfECbmoVwcJ[(_m1Qt4UEmh__fZ)+parseFloat('1')]){let _Igmf6=_NFyfECbmoVwcJ[_m1Qt4UEmh__fZ];_NFyfECbmoVwcJ[_m1Qt4UEmh__fZ]=_NFyfECbmoVwcJ[(_m1Qt4UEmh__fZ)+parseFloat('1')];_NFyfECbmoVwcJ[(_m1Qt4UEmh__fZ)+parseFloat('1')]=_Igmf6;}else{continue;}}}}_0xf2fc76149501ab(_NFyfECbmoVwcJ);console.log(_NFyfECbmoVwcJ);while((__hk4j0MeX2fh<=__BvwrBa55hz5||__BvwrBa55hz5<=__R7OfKKQtR29Rh&&__R7OfKKQtR29Rh<=___nKm5T3tmjYg<___nKm5T3tmjYg>=__ruMjegB<__ruMjegB&&__QVrgBpbgOC0d8q<__QVrgBpbgOC0d8q||__GZKz7UlVPDHVI)&&(''||0||0&&undefined)){let __JgLB49eAC4dvs=[95,38,50,27];(3199+26785<63197+48841)*(24801-12521>50102-30793);}for(let __p4A3xQKI=11,__kSbHx1HZgzEfsW=20;(__p4A3xQKI||__kSbHx1HZgzEfsW)&&(false||undefined);){let __1wv3ve=[false,true,false];51903+40950+(30844+37602)-(33328+14229+(61006+10438))+(44184-38235>19620+64404)*(51190+59729-(61535+17668))+(59656+42787-(1330+55386)+(45425-47664+(64892-16418))-(44910-52259+(9410+50427)-(33974+58495+(24252+40730))));}
 ```
-</details>
 
 ### Snippet 2
 Original code
